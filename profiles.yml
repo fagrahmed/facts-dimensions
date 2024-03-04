@@ -1,0 +1,17 @@
+config:
+  partial_parse: true
+  printer_width: 120
+  send_anonymous_usage_stats: false
+  use_colors: true
+
+fact_dimensions:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: 10.10.93.2
+      port: 5432  # optional
+      database: dbt # optional, should be same as schema
+      schema: dbt-facts
+      user: postgres
+      password: postgres
