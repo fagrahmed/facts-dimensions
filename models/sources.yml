@@ -9,6 +9,8 @@ sources:
       - name: employees_dimension
       - name: wallets_dimension
       - name: profiles_dimension
+      - name: date_dimension
+      - name: time_dimension
 
   - name: axis_sme
     database: dbt
@@ -21,5 +23,3 @@ sources:
     tables:
       - name: meeza_cost
       - name: txn_proc_cost_table
-      - name: date_dimension
-      - name: time_dimension
