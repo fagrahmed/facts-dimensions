@@ -11,6 +11,8 @@ sources:
       - name: profiles_dimension
       - name: date_dimension
       - name: time_dimension
+      - name: meeza_cost
+      - name: txn_proc_cost_table
 
   - name: axis_sme
     database: dbt
@@ -23,3 +25,5 @@ sources:
     tables:
       - name: meeza_cost
       - name: txn_proc_cost_table
+      - name: date_dimension
+      - name: time_dimension
