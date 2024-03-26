@@ -21,7 +21,7 @@ WITH cost_table AS (
                  ELSE CAST(mc.amount AS DECIMAL(10, 2)) END as total_cost_after_vat
 
         FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
-        JOIN {{source('public', 'meeza_cost')}} mc on td.txntype = mc.transactiontype AND td.transactiondomain = mc.transactiondomain
+        JOIN {{source('dbt-dimensions', 'meeza_cost')}} mc on td.txntype = mc.transactiontype AND td.transactiondomain = mc.transactiondomain
         WHERE txntype in
                 ('TransactionTypes_RECEIVE_P2P', 'TransactionTypes_ATM_CASH_OUT', 'TransactionTypes_ATM_CASH_IN',
                  'TransactionTypes_RECEIVE_AGENT_CASH_IN', 'TransactionTypes_RECEIVE_DEPOSIT',
@@ -71,7 +71,7 @@ WITH cost_table AS (
         FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
         LEFT JOIN {{source('axis_sme', 'bankpaymenttransactions')}} bt ON td.txndetailsid = bt.originaltransactionid
         LEFT JOIN {{source('axis_sme', 'bankpayments')}} bp ON bt.bankpaymentid = bp.bankpaymentid
-        LEFT JOIN {{source('public', 'txn_proc_cost_table')}} tp ON td.txntype = tp.transactiontype
+        LEFT JOIN {{source('dbt-dimensions', 'txn_proc_cost_table')}} tp ON td.txntype = tp.transactiontype
               AND td.transaction_createdat_utc2 between tp.createdat and COALESCE(tp.endedat, now())
 
         WHERE txntype = 'TransactionTypes_SEND_BANK_PAYMENT'
