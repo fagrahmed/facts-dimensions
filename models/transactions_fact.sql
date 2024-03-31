@@ -278,6 +278,8 @@ SELECT
     td.txndetailsid,
     td.transaction_createdat_utc2,
     td.transaction_modifiedat_utc2,
+    dd.date_id,
+    tid.time_id,
     td.walletdetailsid,
     coalesce(td.clientdetails ->> 'clientId', ed.clientid) as clientid,
     cd.clienttype,
