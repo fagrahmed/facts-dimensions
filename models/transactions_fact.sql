@@ -318,4 +318,4 @@ LEFT join cost_table ct on td.txndetailsid = ct.txndetailsid
 LEFT join revenue_table rt on td.txndetailsid = rt.txndetailsid
 GROUP BY td.txndetailsid, td.transaction_createdat_utc2, td.transaction_modifiedat_utc2, td.walletdetailsid, ed.clientid, ed.employee_id, td.txntype, td.transactionstatus, td.transactiondomain, td.interchangeaction, td.interchange_amount, td.amount, td.service_fees, td.hasservicefees, td.transactionreference, td.isreversedflag,
          ct.total_cost_before_vat, rt.total_revenue_before_vat, ct.total_cost_after_vat, rt.total_revenue_after_vat, pd.walletprofileid, pd.partner_name, cd.clienttype, td.clientdetails,
-         dd.date_id, tid.time_id
+         dd.date_id, tid.time_id, cd.id, ed.id, pd.id
