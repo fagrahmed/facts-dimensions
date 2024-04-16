@@ -281,7 +281,7 @@ SELECT
     dd.date_id,
     tid.time_id,
     td.walletdetailsid,
-    coalesce(td.clientdetails ->> 'clientId', ed.clientid) as clientid,
+    coalesce(cd.clientid, ed.clientid) as clientid,
     cd.clienttype,
     cd.id AS client_key ,    
     pd.walletprofileid,
