@@ -86,14 +86,14 @@ WITH cost_table AS (
             CAST(mc.amount AS DECIMAL(10, 2))                                         as total_fees_cost_before_vat,
             CAST(mc.vat * mc.amount AS DECIMAL(10, 2))                                as total_fees_cost_after_vat,
             coalesce(employeefeesdiscount::float, 0)                                  as employee_discount,
-            coalesce(transactionfeesdiscount_aibyte_transform::float, 0)                               as transaction_discount,
-            coalesce(employeefeesdiscount::float + transactionfeesdiscount_aibyte_transform::float, 0) as discount,
+            coalesce(transactionfeesdiscount::float, 0)                               as transaction_discount,
+            coalesce(employeefeesdiscount::float + transactionfeesdiscount::float, 0) as discount,
             NULL                                                                      as entity,
             NULL                                                                      as protocol,
             NULL                                                                      as price,
-            coalesce(employeefeesdiscount::float, 0) + coalesce(transactionfeesdiscount_aibyte_transform::float, 0) +
+            coalesce(employeefeesdiscount::float, 0) + coalesce(transactionfeesdiscount::float, 0) +
             CAST(mc.amount AS DECIMAL(10, 2))                                         as total_cost_before_vat,
-            coalesce(employeefeesdiscount::float, 0) + coalesce(transactionfeesdiscount_aibyte_transform::float, 0) +
+            coalesce(employeefeesdiscount::float, 0) + coalesce(transactionfeesdiscount::float, 0) +
             CAST(mc.vat * mc.amount AS DECIMAL(10, 2))                                as total_cost_after_vat
 
         FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
