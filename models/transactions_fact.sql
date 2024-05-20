@@ -302,7 +302,7 @@ SELECT
     ROUND(SUM(COALESCE(rt.total_revenue_before_vat, 0) - COALESCE(ct.total_cost_before_vat, 0))::numeric, 2) as total_profit
 
 FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
-LEFT JOIN {{source('dbt-dimensions', 'wallets_dimension')}} wd ON td.wallet_key = wd.id
+LEFT JOIN {{source('dbt-dimensions', 'wallets_dimension')}} wd ON td.walletdetails = wd.walletid
 LEFT JOIN {{source('dbt-dimensions', 'employees_dimension')}} ed ON wd.walletnumber = ed.employee_mobile AND
             td.transaction_createdat_utc2 between employee_createdat and employee_deletedat
 LEFT JOIN {{source('dbt-dimensions', 'clients_dimension')}} cd ON ed.clientid = cd.clientid                                                                                                                                                 OR cd.bankpaymentwalletid = wd.walletid OR cd.walletpaymentwalletid = wd.walletid
