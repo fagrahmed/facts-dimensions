@@ -31,8 +31,3 @@ sources:
     tables:
       - name: meeza_cost
       - name: txn_proc_cost_table
-<<<<<<< HEAD
-=======
-      - name: date_dimension
-      - name: time_dimension
->>>>>>> 82b79d62cbbbd9407e284b87ee523565254845fe
