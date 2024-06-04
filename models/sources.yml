@@ -8,7 +8,17 @@ sources:
       - name: clients_dimension
       - name: employees_dimension
       - name: wallets_dimension
+      - name: inc_wallets
       - name: profiles_dimension
+      - name: date_dimension
+      - name: time_dimension
+      - name: meeza_cost
+      - name: txn_proc_cost_table
+
+  - name: dbt-facts
+    database: dbt
+    tables:
+      - name: transactions_fact
 
   - name: axis_sme
     database: dbt
@@ -21,5 +31,3 @@ sources:
     tables:
       - name: meeza_cost
       - name: txn_proc_cost_table
-      - name: date_dimension
-      - name: time_dimension
