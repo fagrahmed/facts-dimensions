@@ -283,7 +283,7 @@ revenue_table AS (
             AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
 )
 SELECT
-    md5(random()::text || '-' || COALESCE(td.id, '') || '-' || COALESCE(wd.id, '') || '-' || COALESCE(dd.date_id, '') || '-' || now()::text) AS id,
+    md5(random()::text || '-' || COALESCE(td.id, '') || '-' || COALESCE(wd.id, '') || '-' || COALESCE(dd.date_id::text, '') || '-' || now()::text) AS id,
     td.id AS txn_key,
     dd.date_id AS date_key,
     tid.time_id AS time_key,
