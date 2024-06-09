@@ -2,7 +2,7 @@
 
 {{ config(        
         materialized="incremental",
-        unique_key= "id",
+        unique_key= "txn_key",
         on_schema_change='fail'
 ) }}
 
@@ -283,7 +283,7 @@ revenue_table AS (
             AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
 )
 SELECT
-    md5(random()::text || clock_timestamp()::text) as id,
+    md5(random()::text || '-' || COALESCE(txn_key, '') || '-' || COALESCE(wallet_key, '') || '-' || COALESCE(date_key, '') || '-' || now()::text) AS id,
     td.id AS txn_key,
     dd.date_id AS date_key,
     tid.time_id AS time_key,
