@@ -298,7 +298,11 @@ SELECT
     ROUND(coalesce(ct.total_cost_after_vat, 0)::numeric, 2) as total_cost_after_vat,
     ROUND(coalesce(rt.total_revenue_after_vat, 0)::numeric, 2) as total_revenue_after_vat,
     ROUND(SUM(COALESCE(rt.total_revenue_before_vat, 0) - COALESCE(ct.total_cost_before_vat, 0))::numeric, 2) as total_profit,
-    (now()::timestamptz AT TIME ZONE 'UTC' + INTERVAL '2 hours') as loaddate
+    (now()::timestamptz AT TIME ZONE 'UTC' + INTERVAL '2 hours') as loaddate,
+    CASE
+        WHEN client_key IS NOT NULL AND employee_key IS NOT NULL THEN true
+        ELSE false
+    END AS is_employee
 
 
 FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
