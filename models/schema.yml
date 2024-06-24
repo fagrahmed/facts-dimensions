@@ -49,14 +49,14 @@ models:
             references:
               table: employees_dimension
               column: id
-      - name: profile_key
-        data_type: text
-        constraints:
-          - type: foreign_key
-            name: fk_profile_key
-            references:
-              table: profiles_dimension
-              column: id
+      # - name: profile_key
+      #   data_type: text
+      #   constraints:
+      #     - type: foreign_key
+      #       name: fk_profile_key
+      #       references:
+      #         table: profiles_dimension
+      #         column: id
       - name: txn_key
         data_type: text
         constraints:
