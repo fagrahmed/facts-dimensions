@@ -299,7 +299,7 @@ SELECT
     ROUND(SUM(COALESCE(rt.total_revenue_before_vat, 0) - COALESCE(ct.total_cost_before_vat, 0))::numeric, 2) as total_profit,
     (now()::timestamptz AT TIME ZONE 'UTC' + INTERVAL '2 hours') as loaddate,
     CASE
-        WHEN client_key IS NOT NULL AND employee_key IS NOT NULL THEN true
+        WHEN cd.id IS NOT NULL AND ed.id IS NOT NULL THEN true
         ELSE false
     END AS is_employee
 
@@ -319,6 +319,6 @@ LEFT join revenue_table rt on td.txndetailsid = rt.txndetailsid
     WHERE td.loaddate > COALESCE((SELECT max(loaddate::timestamptz) FROM {{ source('dbt-facts', 'transactions_fact') }}), '1900-01-01'::timestamp)
 {% endif %}
 
-GROUP BY td.amount, ed.employee_id,
+GROUP BY td.amount,
          ct.total_cost_before_vat, rt.total_revenue_before_vat, ct.total_cost_after_vat, rt.total_revenue_after_vat,
          dd.date_id, tid.time_id,  ed.id, pd.id, wd.id, cd.id, td.id
