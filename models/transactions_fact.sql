@@ -306,10 +306,10 @@ SELECT
 
 FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
 LEFT JOIN {{source('dbt-dimensions', 'wallets_dimension')}} wd ON td.walletdetailsid = wd.walletid
-LEFT JOIN {{source('dbt-dimensions', 'employees_dimension')}} ed ON wd.walletnumber = ed.employee_mobile AND
-            td.transaction_createdat_utc2 between employee_createdat_utc2 and employee_deletedat_utc2
+LEFT JOIN {{source('dbt-dimensions', 'employees_dimension')}} ed ON (wd.walletnumber = ed.employee_mobile AND
+            (td.transaction_createdat_utc2 between employee_createdat_utc2 and employee_deletedat_utc2))
 LEFT JOIN {{source('dbt-dimensions', 'clients_dimension')}} cd ON td.clientdetails ->> 'clientId' = cd.clientid
-LEFT JOIN {{source('dbt-dimensions', 'profiles_dimension')}} pd ON wd.profileid = pd.walletprofileid AND wd.partnerid = pd.partnerid
+LEFT JOIN {{source('dbt-dimensions', 'profiles_dimension')}} pd ON (wd.profileid = pd.walletprofileid AND wd.partnerid = pd.partnerid)
 LEFT JOIN {{source('dbt-dimensions', 'date_dimension')}} dd ON DATE(td.transaction_modifiedat_utc2) = dd.full_date
 LEFT JOIN {{source('dbt-dimensions', 'time_dimension')}} tid ON TO_CHAR(td.transaction_modifiedat_utc2, 'HH24:MI:00') = TO_CHAR(tid.full_time, 'HH24:MI:SS')
 LEFT join cost_table ct on td.txndetailsid = ct.txndetailsid
