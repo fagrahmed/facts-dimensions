@@ -289,7 +289,6 @@ SELECT
     tid.time_id AS time_key,
     wd.id AS wallet_key,
     cd.id AS client_key,
-    pd.id AS profile_key,
     ed.id AS employee_key,  
     td.amount,
     ROUND(coalesce(ct.total_cost_before_vat, 0)::numeric, 2) as total_cost_before_vat,
@@ -309,7 +308,6 @@ LEFT JOIN {{source('dbt-dimensions', 'wallets_dimension')}} wd ON td.walletdetai
 LEFT JOIN {{source('dbt-dimensions', 'employees_dimension')}} ed ON (wd.walletnumber = ed.employee_mobile AND
             (td.transaction_createdat_utc2 between employee_createdat_utc2 and employee_deletedat_utc2))
 LEFT JOIN {{source('dbt-dimensions', 'clients_dimension')}} cd ON td.clientdetails ->> 'clientId' = cd.clientid
-LEFT JOIN {{source('dbt-dimensions', 'profiles_dimension')}} pd ON (wd.profileid = pd.walletprofileid AND wd.partnerid = pd.partnerid)
 LEFT JOIN {{source('dbt-dimensions', 'date_dimension')}} dd ON DATE(td.transaction_modifiedat_utc2) = dd.full_date
 LEFT JOIN {{source('dbt-dimensions', 'time_dimension')}} tid ON TO_CHAR(td.transaction_modifiedat_utc2, 'HH24:MI:00') = TO_CHAR(tid.full_time, 'HH24:MI:SS')
 LEFT join cost_table ct on td.txndetailsid = ct.txndetailsid
@@ -321,4 +319,4 @@ LEFT join revenue_table rt on td.txndetailsid = rt.txndetailsid
 
 GROUP BY td.amount,
          ct.total_cost_before_vat, rt.total_revenue_before_vat, ct.total_cost_after_vat, rt.total_revenue_after_vat,
-         dd.date_id, tid.time_id,  ed.id, pd.id, wd.id, cd.id, td.id
+         dd.date_id, tid.time_id,  ed.id, wd.id, cd.id, td.id
