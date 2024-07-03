@@ -126,8 +126,8 @@ revenue_table AS (
             coalesce(bt.axisfees_aibyte_transform::float, 0) * coalesce(bp.vat::float, 1) as total_revenue_after_vat
 
         FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
-        LEFT JOIN {{source('axis_sme', '_airbyte_raw_bankpaymenttransactions')}} bt ON td.txndetailsid = bt.originaltransactionid
-        LEFT JOIN {{source('axis_sme', '_airbyte_raw_bankpayments')}} bp ON bt.bankpaymentid = bp.bankpaymentid
+        LEFT JOIN {{source('axis_sme', 'bankpaymenttransactions')}} bt ON td.txndetailsid = bt.originaltransactionid
+        LEFT JOIN {{source('axis_sme', 'bankpayments')}} bp ON bt.bankpaymentid = bp.bankpaymentid
         WHERE txntype = 'TransactionTypes_SEND_BANK_PAYMENT' AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE') AND isreversedflag = false
 
         UNION
@@ -145,7 +145,7 @@ revenue_table AS (
             (coalesce(employeefeesvat_aibyte_transform::float, 1) + coalesce(transactionfeesvat_aibyte_transform::float, 1)) * (coalesce(employeefees::float, 0) + coalesce(fees_aibyte_transform::float, 0)) as total_revenue_after_vat
 
         FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
-        LEFT JOIN {{source('axis_sme', '_airbyte_raw_disbursementtransactions')}} dt ON td.transactionreference = dt.wallettransactionreference
+        LEFT JOIN {{source('axis_sme', 'disbursementtransactions')}} dt ON td.transactionreference = dt.wallettransactionreference
         WHERE txntype = 'TransactionTypes_SEND_SME_DEPOSIT'
                 AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
 
@@ -165,7 +165,7 @@ revenue_table AS (
 
 
         FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
-        LEFT JOIN {{source('axis_sme', '_airbyte_raw_disbursementtransactions')}} dt ON td.transactionreference = dt.wallettransactionreference
+        LEFT JOIN {{source('axis_sme', 'disbursementtransactions')}} dt ON td.transactionreference = dt.wallettransactionreference
         WHERE txntype = 'TransactionTypes_SEND_SME_PAYROLL_DEPOSIT'
                 AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
 
