@@ -1,5 +1,5 @@
 models:
-  - name: transactions_fact
+  - name: inc_transactions_fact
     config:
       contract:
         enforced: true
@@ -31,7 +31,7 @@ models:
           - type: foreign_key
             name: fk_wallet_key
             references:
-              table: wallets_dimension
+              table: inc_wallets_dimension
               column: id
       - name: client_key
         data_type: text
@@ -39,7 +39,7 @@ models:
           - type: foreign_key
             name: fk_client_key
             references:
-              table: clients_dimension
+              table: inc_clients_dimension
               column: id
       - name: employee_key
         data_type: text
@@ -47,23 +47,23 @@ models:
           - type: foreign_key
             name: fk_employee_key
             references:
-              table: employees_dimension
+              table: inc_employees_dimension
               column: id
-      # - name: profile_key
-      #   data_type: text
-      #   constraints:
-      #     - type: foreign_key
-      #       name: fk_profile_key
-      #       references:
-      #         table: profiles_dimension
-      #         column: id
+      - name: profile_key
+        data_type: text
+        constraints:
+          - type: foreign_key
+            name: fk_profile_key
+            references:
+              table: inc_profiles_dimension
+              column: id
       - name: txn_key
         data_type: text
         constraints:
           - type: foreign_key
             name: fk_txn_key
             references:
-              table: transactions_dimension
+              table: inc_transactions_dimension
               column: id
       - name: is_employee
         data_type: BOOLEAN
@@ -82,62 +82,53 @@ models:
       - name: loaddate
         data_type: TIMESTAMP
 
-    # Add foreign key constraints manually
-    # post-hook: |
-    #   alter table {{ this }} add constraint fk_date_key foreign key (date_key) references date_dimension(date_id);
-    #   alter table {{ this }} add constraint fk_time_key foreign key (time_key) references time_dimension(time_id);
-    #   alter table {{ this }} add constraint fk_wallet_key foreign key (wallet_key) references wallets_dimension(id);
-    #   alter table {{ this }} add constraint fk_client_key foreign key (client_key) references clients_dimension(id);
-    #   alter table {{ this }} add constraint fk_employee_key foreign key (employee_key) references employees_dimension(id);
-    #   alter table {{ this }} add constraint fk_profile_key foreign key (profile_key) references profiles_dimension(id);
-    #   alter table {{ this }} add constraint fk_txn_key foreign key (txn_key) references transactions_dimension(id);
 
 relationships:
   - name: profiles_relationship
     type: many_to_one
-    model: transactions_fact
-    reference_model: profiles_dimension
+    model: inc_transactions_fact
+    reference_model: inc_profiles_dimension
     column: profile_key
     reference_column: id
 
   - name: txns_relationship
     type: many_to_one
-    model: transactions_fact
-    reference_model: transactions_dimension
+    model: inc_transactions_fact
+    reference_model: inc_transactions_dimension
     column: txn_key
     reference_column: id
     
   - name: wallets_relationship
     type: many_to_one
-    model: transactions_fact
-    reference_model: wallets_dimension
+    model: inc_transactions_fact
+    reference_model: inc_wallets_dimension
     column: wallet_key
     reference_column: id
 
   - name: clients_relationship
     type: many_to_one
-    model: transactions_fact
-    reference_model: clients_dimension
+    model: inc_transactions_fact
+    reference_model: inc_clients_dimension
     column: client_key
     reference_column: id
 
   - name: employees_relationship
     type: many_to_one
-    model: transactions_fact
-    reference_model: employees_dimension
+    model: inc_transactions_fact
+    reference_model: inc_employees_dimension
     column: employee_key
     reference_column: id
 
   - name: date_relationship
     type: many_to_one
-    model: transactions_fact
+    model: inc_transactions_fact
     reference_model: date_dimension
     column: date_key
     reference_column: date_id
 
   - name: time_relationship
     type: many_to_one
-    model: transactions_fact
+    model: inc_transactions_fact
     reference_model: time_dimension
     column: time_key
     reference_column: time_id

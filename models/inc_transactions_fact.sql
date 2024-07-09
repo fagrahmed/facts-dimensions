@@ -6,7 +6,7 @@
         on_schema_change='fail'
 ) }}
 
-{% set table_exists_query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'dbt-facts' AND table_name = 'transactions_fact')" %}
+{% set table_exists_query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'dbt-facts' AND table_name = 'inc_transactions_fact')" %}
 {% set table_exists_result = run_query(table_exists_query) %}
 {% set table_exists = table_exists_result.rows[0][0] if table_exists_result and table_exists_result.rows else False %}
 
@@ -80,7 +80,7 @@ WITH cost_table AS (
         LEFT JOIN {{source('axis_sme', 'bankpaymenttransactions')}} bt ON td.txndetailsid = bt.originaltransactionid
         LEFT JOIN {{source('axis_sme', 'bankpayments')}} bp ON bt.bankpaymentid = bp.bankpaymentid
         LEFT JOIN {{source('dbt-dimensions', 'txn_proc_cost_table')}} tp ON td.txntype = tp.transactiontype
-              AND td.transaction_createdat_utc2 between tp.createdat and COALESCE(tp.endedat, now())
+              AND td.transaction_createdat_local between tp.createdat and COALESCE(tp.endedat, now())
 
         WHERE txntype = 'TransactionTypes_SEND_BANK_PAYMENT'
             AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
@@ -290,33 +290,35 @@ SELECT
     wd.id AS wallet_key,
     cd.id AS client_key,
     ed.id AS employee_key,  
+    pd.id AS profile_key,
     td.amount,
     ROUND(coalesce(ct.total_cost_before_vat, 0)::numeric, 2) as total_cost_before_vat,
     ROUND(coalesce(rt.total_revenue_before_vat, 0)::numeric, 2) as total_revenue_before_vat,
     ROUND(coalesce(ct.total_cost_after_vat, 0)::numeric, 2) as total_cost_after_vat,
     ROUND(coalesce(rt.total_revenue_after_vat, 0)::numeric, 2) as total_revenue_after_vat,
     ROUND(SUM(COALESCE(rt.total_revenue_before_vat, 0) - COALESCE(ct.total_cost_before_vat, 0))::numeric, 2) as total_profit,
-    (now()::timestamptz AT TIME ZONE 'UTC' + INTERVAL '2 hours') as loaddate,
+    (now()::timestamptz AT TIME ZONE 'UTC' + INTERVAL '3 hours') as loaddate,
     CASE
         WHEN cd.id IS NOT NULL AND ed.id IS NOT NULL THEN true
         ELSE false
     END AS is_employee
 
 
-FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
-LEFT JOIN {{source('dbt-dimensions', 'wallets_dimension')}} wd ON td.walletdetailsid = wd.walletid
-LEFT JOIN {{source('dbt-dimensions', 'employees_dimension')}} ed ON (wd.walletnumber = ed.employee_mobile AND
-            (td.transaction_createdat_utc2 between employee_createdat_utc2 and employee_deletedat_utc2))
-LEFT JOIN {{source('dbt-dimensions', 'clients_dimension')}} cd ON td.clientdetails ->> 'clientId' = cd.clientid
-LEFT JOIN {{source('dbt-dimensions', 'date_dimension')}} dd ON DATE(td.transaction_modifiedat_utc2) = dd.full_date
-LEFT JOIN {{source('dbt-dimensions', 'time_dimension')}} tid ON TO_CHAR(td.transaction_modifiedat_utc2, 'HH24:MI:00') = TO_CHAR(tid.full_time, 'HH24:MI:SS')
+FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
+LEFT JOIN {{source('dbt-dimensions', 'inc_wallets_dimension')}} wd ON td.walletdetailsid = wd.walletid
+LEFT JOIN {{source('dbt-dimensions', 'inc_employees_dimension')}} ed ON (wd.walletnumber = ed.employee_mobile AND
+            (td.transaction_createdat_local between employee_createdat_local and employee_deletedat_local))
+LEFT JOIN {{source('dbt-dimensions', 'inc_clients_dimension')}} cd ON td.clientdetails ->> 'clientId' = cd.clientid
+LEFT JOIN {{source('dbt-dimensions', 'date_dimension')}} dd ON DATE(td.transaction_modifiedat_local) = dd.full_date
+LEFT JOIN {{source('dbt-dimensions', 'time_dimension')}} tid ON TO_CHAR(td.transaction_modifiedat_local, 'HH24:MI:00') = TO_CHAR(tid.full_time, 'HH24:MI:SS')
+LEFT JOIN {{source('dbt-dimensions', 'inc_profiles_dimension')}} pd ON (wd.profileid = pd.walletprofileid AND wd.partnerid = pd.partnerid)
 LEFT join cost_table ct on td.txndetailsid = ct.txndetailsid
 LEFT join revenue_table rt on td.txndetailsid = rt.txndetailsid
 
 {% if is_incremental() and table_exists %}
-    WHERE td.loaddate > COALESCE((SELECT max(loaddate::timestamptz) FROM {{ source('dbt-facts', 'transactions_fact') }}), '1900-01-01'::timestamp)
+    WHERE td.loaddate > COALESCE((SELECT max(loaddate::timestamptz) FROM {{ source('dbt-facts', 'inc_transactions_fact') }}), '1900-01-01'::timestamp)
 {% endif %}
 
 GROUP BY td.amount,
          ct.total_cost_before_vat, rt.total_revenue_before_vat, ct.total_cost_after_vat, rt.total_revenue_after_vat,
-         dd.date_id, tid.time_id,  ed.id, wd.id, cd.id, td.id
+         dd.date_id, tid.time_id,  ed.id, wd.id, cd.id, td.id, pd.id
