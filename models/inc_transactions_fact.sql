@@ -28,7 +28,7 @@ WITH cost_table AS (
              CASE WHEN lower(interchangeaction) = 'debit' THEN CAST(interchange_amount AS DECIMAL(10, 2)) + CAST(mc.vat * mc.amount AS DECIMAL(10, 2))
                  ELSE CAST(mc.amount AS DECIMAL(10, 2)) END as total_cost_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         JOIN {{source('dbt-dimensions', 'meeza_cost')}} mc on td.txntype = mc.transactiontype AND td.transactiondomain = mc.transactiondomain
         WHERE txntype in
                 ('TransactionTypes_RECEIVE_P2P', 'TransactionTypes_ATM_CASH_OUT', 'TransactionTypes_ATM_CASH_IN',
@@ -55,7 +55,7 @@ WITH cost_table AS (
             (CASE WHEN transactiondomain = 'TransactionDomains_OFF_US' THEN service_fees / 2
               ELSE 0 END) as total_cost_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         WHERE txntype in ('TransactionTypes_BILL_PAYMENT', 'TransactionTypes_TOP_UP')
         AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
         
@@ -76,7 +76,7 @@ WITH cost_table AS (
             COALESCE(bt.corepayfees::float, 0) + COALESCE(bp.discount::float, 0) as total_cost_before_vat,
             COALESCE(bt.corepayfees::float, 0) + COALESCE(bp.discount::float, 0) as total_cost_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         LEFT JOIN {{source('axis_sme', 'bankpaymenttransactions')}} bt ON td.txndetailsid = bt.originaltransactionid
         LEFT JOIN {{source('axis_sme', 'bankpayments')}} bp ON bt.bankpaymentid = bp.bankpaymentid
         LEFT JOIN {{source('dbt-dimensions', 'txn_proc_cost_table')}} tp ON td.txntype = tp.transactiontype
@@ -104,7 +104,7 @@ WITH cost_table AS (
             coalesce(employeefeesdiscount::float, 0) + coalesce(transactionfeesdiscount_aibyte_transform::float, 0) +
             CAST(mc.vat * mc.amount AS DECIMAL(10, 2))                                as total_cost_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         LEFT JOIN {{source('dbt-dimensions', 'meeza_cost')}} mc ON td.txntype = mc.transactiontype AND td.transactiondomain = mc.transactiondomain
         LEFT JOIN {{source('axis_sme', 'disbursementtransactions')}} dt ON td.transactionreference = dt.wallettransactionreference
         WHERE txntype = 'TransactionTypes_SEND_SME_DEPOSIT'
@@ -125,7 +125,7 @@ revenue_table AS (
             coalesce(bt.axisfees_aibyte_transform::float, 0) as total_revenue_before_vat,
             coalesce(bt.axisfees_aibyte_transform::float, 0) * coalesce(bp.vat::float, 1) as total_revenue_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         LEFT JOIN {{source('axis_sme', 'bankpaymenttransactions')}} bt ON td.txndetailsid = bt.originaltransactionid
         LEFT JOIN {{source('axis_sme', 'bankpayments')}} bp ON bt.bankpaymentid = bp.bankpaymentid
         WHERE txntype = 'TransactionTypes_SEND_BANK_PAYMENT' AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE') AND isreversedflag = false
@@ -144,7 +144,7 @@ revenue_table AS (
             coalesce(employeefees::float, 0) + coalesce(fees_aibyte_transform::float, 0) as total_revenue_before_vat,
             (coalesce(employeefeesvat_aibyte_transform::float, 1) + coalesce(transactionfeesvat_aibyte_transform::float, 1)) * (coalesce(employeefees::float, 0) + coalesce(fees_aibyte_transform::float, 0)) as total_revenue_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         LEFT JOIN {{source('axis_sme', 'disbursementtransactions')}} dt ON td.transactionreference = dt.wallettransactionreference
         WHERE txntype = 'TransactionTypes_SEND_SME_DEPOSIT'
                 AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
@@ -164,7 +164,7 @@ revenue_table AS (
             (coalesce(employeefeesvat_aibyte_transform::float, 1) + coalesce(transactionfeesvat_aibyte_transform::float, 1)) * (coalesce(employeefees::float, 0) + coalesce(fees_aibyte_transform::float, 0)) as total_revenue_after_vat
 
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         LEFT JOIN {{source('axis_sme', 'disbursementtransactions')}} dt ON td.transactionreference = dt.wallettransactionreference
         WHERE txntype = 'TransactionTypes_SEND_SME_PAYROLL_DEPOSIT'
                 AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
@@ -183,7 +183,7 @@ revenue_table AS (
             coalesce(td.amount::float, 0) AS total_revenue_before_vat,
             coalesce(td.amount::float, 0) AS total_revenue_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         WHERE txntype = 'TransactionTypes_SEND_SME_SUBSCRIPTION_PAYMENT'
           AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
           AND isreversedflag = false
@@ -204,7 +204,7 @@ revenue_table AS (
             (CASE WHEN lower(interchangeaction) = 'credit' AND transactiondomain = 'TransactionDomains_OFF_US'
                 THEN interchange_amount ELSE 0  END) as total_revenue_ater_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         WHERE txntype = 'TransactionTypes_SEND_P2P'
             AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
 
@@ -224,7 +224,7 @@ revenue_table AS (
             (CASE WHEN lower(interchangeaction) = 'credit' AND hasservicefees = true
                 THEN interchange_amount + (service_fees::float) ELSE coalesce(service_fees::float, 0) END) as total_revenue_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         WHERE txntype in ('TransactionTypes_ATM_CASH_OUT', 'TransactionTypes_ATM_CASH_IN', 'TransactionTypes_ATM_CASH_OUT_REVERSAL', 'TransactionTypes_ATM_CASH_IN_REVERSAL')
             AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
 
@@ -242,7 +242,7 @@ revenue_table AS (
             (service_fees::float) as total_revenue_before_vat,
             (service_fees::float) as total_revenue_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         WHERE txntype in ('TransactionTypes_BILL_PAYMENT', 'TransactionTypes_TOP_UP')
             AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
 
@@ -260,7 +260,7 @@ revenue_table AS (
             td.amount as total_revenue_before_vat,
             td.amount as total_revenue_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         WHERE txntype = 'TransactionTypes_CREATE_VCN_FEES'
             AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
 
@@ -278,7 +278,7 @@ revenue_table AS (
             CASE WHEN hasservicefees = true THEN td.service_fees ELSE 0 END as total_revenue_before_vat,
             CASE WHEN hasservicefees = true THEN td.service_fees ELSE 0 END as total_revenue_after_vat
 
-        FROM {{source('dbt-dimensions', 'transactions_dimension')}} td
+        FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
         WHERE txntype = 'TransactionTypes_SEND_REDEEM_SME_INADVANCE_DEPOSIT'
             AND transactionstatus IN ('TransactionStatus_POSTED', 'TransactionStatus_PENDING_ADVICE')
 )
