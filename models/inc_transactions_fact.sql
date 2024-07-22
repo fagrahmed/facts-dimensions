@@ -305,7 +305,7 @@ SELECT
 
 
 FROM {{source('dbt-dimensions', 'inc_transactions_dimension')}} td
-LEFT JOIN {{source('dbt-dimensions', 'inc_wallets_dimension')}} wd ON td.walletdetailsid = wd.walletid
+LEFT JOIN {{source('dbt-dimensions', 'inc_wallets_dimension')}} wd ON (td.walletdetailsid = wd.walletid AND wd.currentflag = true)
 LEFT JOIN {{source('dbt-dimensions', 'inc_employees_dimension')}} ed ON (wd.walletnumber = ed.employee_mobile AND
             (td.transaction_createdat_local between employee_createdat_local and employee_deletedat_local))
 LEFT JOIN {{source('dbt-dimensions', 'inc_clients_dimension')}} cd ON td.clientdetails ->> 'clientId' = cd.clientid
