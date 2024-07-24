@@ -285,8 +285,12 @@ revenue_table AS (
 SELECT
     md5(random()::text || '-' || COALESCE(td.id, '') || '-' || COALESCE(wd.id, '') || '-' || COALESCE(dd.date_id::text, '') || '-' || now()::text) AS id,
     td.id AS txn_key,
-    dd.date_id AS date_key,
-    tid.time_id AS time_key,
+    ddm.date_id AS date_txn_modified_key,
+    tidm.time_id AS time_txn_modified_key,
+    ddcr.date_id AS date_txn_created_key,
+    tidcr.time_id AS time_txn_created_key,
+    ddct.date_id AS date_txn_commit_key,
+    tidct.time_id AS time_txn_commit_key,
     wd.id AS wallet_key,
     cd.id AS client_key,
     ed.id AS employee_key,  
@@ -309,8 +313,16 @@ LEFT JOIN {{source('dbt-dimensions', 'inc_wallets_dimension')}} wd ON (td.wallet
 LEFT JOIN {{source('dbt-dimensions', 'inc_employees_dimension')}} ed ON (wd.walletnumber = ed.employee_mobile AND
             (td.transaction_createdat_local between employee_createdat_local and employee_deletedat_local))
 LEFT JOIN {{source('dbt-dimensions', 'inc_clients_dimension')}} cd ON td.clientdetails ->> 'clientId' = cd.clientid
-LEFT JOIN {{source('dbt-dimensions', 'date_dimension')}} dd ON DATE(td.transaction_modifiedat_local) = dd.full_date
-LEFT JOIN {{source('dbt-dimensions', 'time_dimension')}} tid ON TO_CHAR(td.transaction_modifiedat_local, 'HH24:MI:00') = TO_CHAR(tid.full_time, 'HH24:MI:SS')
+LEFT JOIN {{source('dbt-dimensions', 'date_dimension')}} ddm ON DATE(td.transaction_modifiedat_local) = ddm.full_date
+LEFT JOIN {{source('dbt-dimensions', 'time_dimension')}} tidm ON TO_CHAR(td.transaction_modifiedat_local, 'HH24:MI:00') = TO_CHAR(tidm.full_time, 'HH24:MI:SS')
+
+LEFT JOIN {{source('dbt-dimensions', 'date_dimension')}} ddcr ON DATE(td.transaction_createdat_local) = ddcr.full_date
+LEFT JOIN {{source('dbt-dimensions', 'time_dimension')}} tidcr ON TO_CHAR(td.transaction_createdat_local, 'HH24:MI:00') = TO_CHAR(tidcr.full_time, 'HH24:MI:SS')
+
+LEFT JOIN {{source('dbt-dimensions', 'date_dimension')}} ddct ON DATE(td.transaction_commitat_local) = ddct.full_date
+LEFT JOIN {{source('dbt-dimensions', 'time_dimension')}} tidct ON TO_CHAR(td.transaction_commitat_local, 'HH24:MI:00') = TO_CHAR(tidct.full_time, 'HH24:MI:SS')
+
+
 LEFT JOIN {{source('dbt-dimensions', 'inc_profiles_dimension')}} pd ON (wd.profileid = pd.walletprofileid AND wd.partnerid = pd.partnerid)
 LEFT join cost_table ct on td.txndetailsid = ct.txndetailsid
 LEFT join revenue_table rt on td.txndetailsid = rt.txndetailsid

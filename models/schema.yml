@@ -9,7 +9,8 @@ models:
         constraints:
           - type: not_null
           - type: primary_key
-      - name: date_key
+
+      - name: date_txn_modified_key
         data_type: INT
         constraints:
           - type: foreign_key
@@ -17,7 +18,7 @@ models:
             references:
               table: date_dimension
               column: date_id
-      - name: time_key
+      - name: time_txn_modified_key
         data_type: INT
         constraints:
           - type: foreign_key
@@ -25,6 +26,41 @@ models:
             references:
               table: time_dimension
               column: time_id
+
+      - name: date_txn_created_key
+        data_type: INT
+        constraints:
+          - type: foreign_key
+            name: fk_date_key
+            references:
+              table: date_dimension
+              column: date_id
+      - name: time_txn_created_key
+        data_type: INT
+        constraints:
+          - type: foreign_key
+            name: fk_time_key
+            references:
+              table: time_dimension
+              column: time_id
+      
+      - name: date_txn_commit_key
+        data_type: INT
+        constraints:
+          - type: foreign_key
+            name: fk_date_key
+            references:
+              table: date_dimension
+              column: date_id
+      - name: time_txn_commit_key
+        data_type: INT
+        constraints:
+          - type: foreign_key
+            name: fk_time_key
+            references:
+              table: time_dimension
+              column: time_id
+        
       - name: wallet_key
         data_type: text
         constraints:
