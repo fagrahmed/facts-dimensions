@@ -333,4 +333,4 @@ LEFT join revenue_table rt on td.txndetailsid = rt.txndetailsid
 
 GROUP BY td.amount,
          ct.total_cost_before_vat, rt.total_revenue_before_vat, ct.total_cost_after_vat, rt.total_revenue_after_vat,
-         dd.date_id, tid.time_id,  ed.id, wd.id, cd.id, td.id, pd.id
+         ddm.date_id, tidm.time_id, ddcr.date_id, tidcr.time_id, ddct.date_id, tidct.time_id, ed.id, wd.id, cd.id, td.id, pd.id
